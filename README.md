@@ -4,6 +4,12 @@ Ranks resumes against a job description using semantic search
 (Sentence Transformers + FAISS), blended with explicit skill/experience
 matching, served through a FastAPI API.
 
+## Screenshots
+
+![Hero page](Screenshot 2026-07-30 221036.png)
+![Pipeline running](Screenshot 2026-07-30 221101.png)
+![Ranked results](Screenshot 2026-07-30 221112.png)
+
 ## Project structure
 
 ```
@@ -16,8 +22,10 @@ resume_screener/
 │   └── main.py             # FastAPI app (upload / rank / list / reset)
 ├── frontend/
 │   └── index.html          # single-page UI, visualizes the whole pipeline
+├── screenshots/             # project screenshots used in this README
 ├── example_usage.py         # run the pipeline directly, no server needed
 ├── requirements.txt
+├── .gitignore
 └── README.md
 ```
 
