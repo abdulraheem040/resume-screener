@@ -6,9 +6,9 @@ matching, served through a FastAPI API.
 
 ## Screenshots
 
-![Hero page](screenshots/Screenshot 2026-07-30 221036.png)
-![Pipeline running](screenshots/Screenshot 2026-07-30 221101.png)
-![Ranked results](screenshots/Screenshot 2026-07-30 221112.png)
+![Hero page](screenshots/hero.png)
+![Pipeline running](screenshots/pipeline.png)
+![Ranked results](screenshots/radar-results.png)
 
 ## Project structure
 
