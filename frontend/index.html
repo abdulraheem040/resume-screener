@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Signal / Resume Screening</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#0A1018;
+    --panel:#111B29;
+    --panel-2:#16233A;
+    --line: #223049;
+    --phosphor:#5EEAD4;
+    --phosphor-dim: #5EEAD433;
+    --amber:#F2A65A;
+    --paper:#E7ECF3;
+    --muted:#7E8CA6;
+    --danger:#E2685C;
+    --radius: 14px;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:
+      radial-gradient(circle at 15% -10%, #12233199 0%, transparent 45%),
+      radial-gradient(circle at 100% 10%, #0f2a2a66 0%, transparent 40%),
+      var(--ink);
+    color:var(--paper);
+    font-family:'Inter', sans-serif;
+    min-height:100vh;
+  }
+  ::selection{ background:var(--phosphor-dim); color:var(--paper); }
+
+  .mono{ font-family:'IBM Plex Mono', monospace; }
+  .display{ font-family:'Space Grotesk', sans-serif; }
+
+  a{ color:inherit; }
+
+  /* ---------- Layout shell ---------- */
+  .wrap{ max-width:1180px; margin:0 auto; padding:0 28px; }
+
+  header.top{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:22px 0; border-bottom:1px solid var(--line);
+  }
+  .brand{ display:flex; align-items:center; gap:10px; font-family:'Space Grotesk'; font-weight:600; letter-spacing:0.3px; font-size:18px;}
+  .brand .dot{
+    width:9px; height:9px; border-radius:50%; background:var(--phosphor);
+    box-shadow:0 0 0 4px var(--phosphor-dim);
+    animation: pulse 2.4s ease-in-out infinite;
+  }
+  @keyframes pulse{
+    0%,100%{ box-shadow:0 0 0 4px var(--phosphor-dim); }
+    50%{ box-shadow:0 0 0 8px transparent; }
+  }
+  .status-pill{
+    font-family:'IBM Plex Mono'; font-size:12px; color:var(--muted);
+    border:1px solid var(--line); padding:6px 12px; border-radius:999px;
+    display:flex; align-items:center; gap:8px;
+  }
+  .status-pill .led{ width:7px; height:7px; border-radius:50%; background:var(--danger); }
+  .status-pill.online .led{ background:var(--phosphor); }
+
+  /* ---------- Hero ---------- */
+  .hero{ padding:64px 0 48px; display:grid; grid-template-columns:1.1fr 0.9fr; gap:48px; align-items:center; }
+  .eyebrow{
+    font-family:'IBM Plex Mono'; font-size:12px; letter-spacing:2px; text-transform:uppercase;
+    color:var(--phosphor); margin:0 0 14px;
+  }
+  h1{
+    font-family:'Space Grotesk'; font-size:44px; line-height:1.12; margin:0 0 18px; font-weight:600;
+  }
+  h1 span{ color:var(--phosphor); }
+  .lede{ color:var(--muted); font-size:16px; line-height:1.6; max-width:46ch; }
+
+  /* mini radar in hero */
+  .scope{
+    position:relative; width:100%; aspect-ratio:1/1; max-width:360px; margin:0 auto;
+  }
+  .scope svg{ width:100%; height:100%; overflow:visible; }
+  .scope-ring{ fill:none; stroke:var(--line); stroke-width:1; }
+  .scope-sweep{
+    transform-box: view-box;
+    transform-origin: 0px 0px;
+    animation: sweep 2.6s linear infinite;
+  }
+  @keyframes sweep{ from{ transform:rotate(0deg);} to{ transform:rotate(360deg);} }
+  .blip{ fill:var(--phosphor); }
+  .blip.dim{ fill:var(--amber); opacity:0.85; }
+
+  /* ---------- Pipeline strip ---------- */
+  .pipeline{
+    display:grid; grid-template-columns:repeat(4,1fr); gap:2px;
+    background:var(--line); border:1px solid var(--line); border-radius:var(--radius); overflow:hidden;
+    margin:40px 0 56px;
+  }
+  .stage{
+    background:var(--panel); padding:22px 20px; position:relative;
+  }
+  .stage .n{ font-family:'IBM Plex Mono'; font-size:12px; color:var(--muted); }
+  .stage h3{ font-family:'Space Grotesk'; font-size:16px; margin:8px 0 6px; font-weight:600; }
+  .stage p{ font-size:13px; color:var(--muted); margin:0; line-height:1.5; }
+  .stage.active{ background:var(--panel-2); }
+  .stage.active .n{ color:var(--phosphor); }
+  .stage .glyph{
+    position:absolute; top:20px; right:18px; width:20px; height:20px;
+    border-radius:5px; border:1px solid var(--line);
+  }
+  .stage.active .glyph{ border-color:var(--phosphor); box-shadow:0 0 0 3px var(--phosphor-dim); }
+  .stage.done .glyph{ background:var(--phosphor); border-color:var(--phosphor); }
+
+  /* ---------- Panels ---------- */
+  .grid2{ display:grid; grid-template-columns:1fr 1fr; gap:24px; margin-bottom:24px; }
+  .panel{
+    background:var(--panel); border:1px solid var(--line); border-radius:var(--radius); padding:26px;
+  }
+  .panel h2{ font-family:'Space Grotesk'; font-size:18px; margin:0 0 4px; font-weight:600; }
+  .panel .sub{ color:var(--muted); font-size:13px; margin:0 0 20px; }
+
+  label{ display:block; font-family:'IBM Plex Mono'; font-size:11px; letter-spacing:0.5px; text-transform:uppercase; color:var(--muted); margin:16px 0 8px; }
+  label:first-of-type{ margin-top:0; }
+  textarea, input[type=text], input[type=number]{
+    width:100%; background:var(--ink); border:1px solid var(--line); border-radius:8px;
+    color:var(--paper); font-family:'Inter'; font-size:14px; padding:12px 14px; resize:vertical;
+  }
+  textarea:focus, input:focus{ outline:none; border-color:var(--phosphor); }
+  textarea{ min-height:110px; }
+
+  .row2{ display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+
+  .chips{ display:flex; flex-wrap:wrap; gap:8px; margin-top:10px; }
+  .chip{
+    font-family:'IBM Plex Mono'; font-size:12px; background:var(--panel-2); border:1px solid var(--line);
+    padding:5px 10px; border-radius:999px; display:flex; align-items:center; gap:6px;
+  }
+  .chip button{ background:none; border:none; color:var(--muted); cursor:pointer; font-size:13px; line-height:1; padding:0; }
+  .chip button:hover{ color:var(--danger); }
+
+  /* dropzone */
+  .dropzone{
+    border:1.5px dashed var(--line); border-radius:10px; padding:26px; text-align:center;
+    color:var(--muted); font-size:13px; cursor:pointer; transition:border-color .15s, background .15s;
+  }
+  .dropzone:hover, .dropzone.drag{ border-color:var(--phosphor); background:var(--phosphor-dim); }
+  .dropzone strong{ color:var(--paper); }
+  input[type=file]{ display:none; }
+
+  .filelist{ margin-top:14px; display:flex; flex-direction:column; gap:8px; }
+  .fileitem{
+    display:flex; align-items:center; justify-content:space-between; gap:10px;
+    background:var(--ink); border:1px solid var(--line); border-radius:8px; padding:9px 12px;
+    font-family:'IBM Plex Mono'; font-size:12.5px;
+  }
+  .fileitem .name{ overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .fileitem .tag{ font-size:11px; padding:2px 8px; border-radius:999px; border:1px solid var(--line); color:var(--muted); flex-shrink:0; }
+  .fileitem .tag.queued{ color:var(--muted); }
+  .fileitem .tag.working{ color:var(--amber); border-color:var(--amber); }
+  .fileitem .tag.done{ color:var(--phosphor); border-color:var(--phosphor); }
+  .fileitem .tag.error{ color:var(--danger); border-color:var(--danger); }
+
+  .runbar{ display:flex; align-items:center; gap:16px; margin-top:22px; }
+  button.primary{
+    font-family:'Space Grotesk'; font-weight:600; font-size:15px;
+    background:var(--phosphor); color:#052824; border:none; border-radius:9px;
+    padding:14px 26px; cursor:pointer; transition:transform .12s, box-shadow .12s;
+  }
+  button.primary:hover{ transform:translateY(-1px); box-shadow:0 8px 24px -8px var(--phosphor-dim); }
+  button.primary:disabled{ opacity:0.5; cursor:not-allowed; transform:none; box-shadow:none; }
+  button.ghost{
+    font-family:'IBM Plex Mono'; font-size:12px; background:none; color:var(--muted);
+    border:1px solid var(--line); border-radius:9px; padding:12px 16px; cursor:pointer;
+  }
+  button.ghost:hover{ color:var(--paper); border-color:var(--paper); }
+  .runmsg{ font-family:'IBM Plex Mono'; font-size:12.5px; color:var(--muted); }
+
+  /* ---------- Results ---------- */
+  .results{ margin-top:16px; }
+  .results-head{ display:flex; align-items:baseline; justify-content:space-between; margin-bottom:20px; }
+  .results-head h2{ font-family:'Space Grotesk'; font-size:20px; margin:0; }
+  .results-head .meta{ font-family:'IBM Plex Mono'; font-size:12px; color:var(--muted); }
+
+  .results-grid{ display:grid; grid-template-columns:1fr 1.15fr; gap:24px; align-items:start; }
+
+  /* radar / match scope */
+  .radar-card{ background:var(--panel); border:1px solid var(--line); border-radius:var(--radius); padding:24px; }
+  .radar-card h3{ font-family:'Space Grotesk'; font-size:15px; margin:0 0 4px; }
+  .radar-card .sub{ color:var(--muted); font-size:12.5px; margin:0 0 14px; }
+  .radar-wrap{ position:relative; width:100%; aspect-ratio:1/1; }
+  .radar-wrap svg{ width:100%; height:100%; }
+  .radar-ring{ fill:none; stroke:var(--line); stroke-width:1; }
+  .radar-axis{ stroke:var(--line); stroke-width:1; }
+  .radar-center{ fill:var(--paper); }
+  .radar-blip{ fill:var(--phosphor); stroke:var(--ink); stroke-width:2; cursor:pointer; }
+  .radar-blip.top{ fill:var(--amber); }
+  .radar-label{ font-family:'IBM Plex Mono'; font-size:9px; fill:var(--muted); }
+
+  /* leaderboard */
+  .board{ display:flex; flex-direction:column; gap:12px; }
+  .card{
+    background:var(--panel); border:1px solid var(--line); border-radius:var(--radius); padding:18px 20px;
+    opacity:0; transform:translateY(8px); animation: cardin .4s ease forwards;
+  }
+  @keyframes cardin{ to{ opacity:1; transform:translateY(0); } }
+  .card-top{ display:flex; align-items:center; justify-content:space-between; gap:12px; }
+  .rank-id{ display:flex; align-items:center; gap:12px; }
+  .rank-num{ font-family:'IBM Plex Mono'; font-size:13px; color:var(--muted); width:22px; }
+  .rank-name{ font-family:'Space Grotesk'; font-weight:600; font-size:15.5px; }
+  .rank-score{ font-family:'Space Grotesk'; font-weight:700; font-size:22px; color:var(--phosphor); }
+  .rank-score small{ font-family:'IBM Plex Mono'; font-size:10px; color:var(--muted); font-weight:400; margin-left:4px; }
+
+  .metrics{ display:flex; flex-direction:column; gap:7px; margin-top:14px; }
+  .metric-row{ display:grid; grid-template-columns:90px 1fr 42px; align-items:center; gap:10px; }
+  .metric-row .label{ font-family:'IBM Plex Mono'; font-size:10.5px; color:var(--muted); text-transform:uppercase; }
+  .metric-track{ height:6px; background:var(--ink); border-radius:4px; overflow:hidden; border:1px solid var(--line); }
+  .metric-fill{ height:100%; background:var(--phosphor); border-radius:4px; width:0%; transition:width .6s ease; }
+  .metric-fill.skill{ background:var(--amber); }
+  .metric-fill.exp{ background:#8AA9FF; }
+  .metric-val{ font-family:'IBM Plex Mono'; font-size:11px; color:var(--muted); text-align:right; }
+
+  .skilltags{ display:flex; flex-wrap:wrap; gap:6px; margin-top:12px; }
+  .skilltag{ font-family:'IBM Plex Mono'; font-size:10.5px; padding:3px 8px; border-radius:999px; border:1px solid; }
+  .skilltag.match{ color:var(--phosphor); border-color:var(--phosphor); background:var(--phosphor-dim); }
+  .skilltag.miss{ color:var(--danger); border-color:var(--danger); opacity:0.85; }
+
+  .empty, .placeholder{
+    color:var(--muted); font-size:13.5px; text-align:center; padding:50px 20px;
+    border:1px dashed var(--line); border-radius:var(--radius); font-family:'IBM Plex Mono';
+  }
+
+  footer{ text-align:center; color:var(--muted); font-size:12px; padding:50px 0 30px; font-family:'IBM Plex Mono'; }
+  footer a{ color:var(--phosphor); text-decoration:none; }
+
+  @media (max-width: 860px){
+    .hero{ grid-template-columns:1fr; }
+    .pipeline{ grid-template-columns:1fr 1fr; }
+    .grid2, .row2, .results-grid{ grid-template-columns:1fr; }
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    *{ animation:none !important; transition:none !important; }
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <header class="top">
+    <div class="brand"><span class="dot"></span> SIGNAL <span class="mono" style="color:var(--muted); font-weight:400; font-size:12px;">/ resume screening</span></div>
+    <div class="status-pill" id="apiStatus"><span class="led"></span><span id="apiStatusText">checking API…</span></div>
+  </header>
+
+  <section class="hero">
+    <div>
+      <p class="eyebrow">Semantic candidate matching</p>
+      <h1>Find the resume that <span>matches the signal</span>, not just the keywords.</h1>
+      <p class="lede">Upload a batch of resumes, describe the role, and watch each candidate get parsed, embedded, and plotted against the job description in real time — then ranked by a blend of semantic fit, required skills, and experience.</p>
+    </div>
+    <div class="scope">
+      <svg viewBox="-100 -100 200 200">
+        <circle class="scope-ring" r="90"/>
+        <circle class="scope-ring" r="60"/>
+        <circle class="scope-ring" r="30"/>
+        <line class="scope-ring" x1="-100" y1="0" x2="100" y2="0"/>
+        <line class="scope-ring" x1="0" y1="-100" x2="0" y2="100"/>
+        <g class="scope-sweep">
+          <path d="M0,0 L90,0 A90,90 0 0,1 85.6,28.0 Z" fill="url(#sweepGrad)"/>
+        </g>
+        <defs>
+          <linearGradient id="sweepGrad" gradientUnits="userSpaceOnUse" x1="90" y1="0" x2="85.6" y2="28.0">
+            <stop offset="0%" stop-color="#5EEAD4" stop-opacity="0.45"/>
+            <stop offset="100%" stop-color="#5EEAD4" stop-opacity="0"/>
+          </linearGradient>
+        </defs>
+        <circle class="blip" cx="20" cy="-35" r="4"/>
+        <circle class="blip" cx="-45" cy="10" r="3.5"/>
+        <circle class="blip dim" cx="10" cy="55" r="3"/>
+        <circle class="blip" cx="-20" cy="-60" r="3"/>
+        <circle cx="0" cy="0" r="3.5" fill="#E7ECF3"/>
+      </svg>
+    </div>
+  </section>
+
+  <div class="pipeline" id="pipelineStrip">
+    <div class="stage" data-stage="parse">
+      <div class="n">01</div>
+      <h3>Parse</h3>
+      <p>Extract text from PDF/DOCX and split into skills, experience, education.</p>
+      <div class="glyph"></div>
+    </div>
+    <div class="stage" data-stage="embed">
+      <div class="n">02</div>
+      <h3>Embed</h3>
+      <p>Sentence Transformers turns each resume and the JD into vectors.</p>
+      <div class="glyph"></div>
+    </div>
+    <div class="stage" data-stage="search">
+      <div class="n">03</div>
+      <h3>Search</h3>
+      <p>FAISS finds the resumes closest to the job description in vector space.</p>
+      <div class="glyph"></div>
+    </div>
+    <div class="stage" data-stage="rank">
+      <div class="n">04</div>
+      <h3>Rank</h3>
+      <p>Blend semantic fit with required-skill and experience matching.</p>
+      <div class="glyph"></div>
+    </div>
+  </div>
+
+  <div class="grid2">
+    <div class="panel">
+      <h2>Job description</h2>
+      <p class="sub">What the role needs. This gets embedded and used as the search query.</p>
+
+      <label>Description</label>
+      <textarea id="jdText" placeholder="Senior backend engineer. Own our API platform, mentor engineers, ship reliable systems...">Senior backend engineer with strong Python experience. Own our API platform end to end, design scalable services, and mentor junior engineers. 5+ years building production systems.</textarea>
+
+      <label>Required skills</label>
+      <input type="text" id="skillInput" placeholder="Type a skill and press Enter — e.g. Python">
+      <div class="chips" id="skillChips"></div>
+
+      <div class="row2">
+        <div>
+          <label>Min. years experience</label>
+          <input type="number" id="minYears" value="5" min="0">
+        </div>
+        <div>
+          <label>Candidates to rank</label>
+          <input type="number" id="topK" value="10" min="1" max="50">
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>Resumes</h2>
+      <p class="sub">PDF, DOCX, or TXT. Each one is parsed and indexed the moment you run screening.</p>
+
+      <div class="dropzone" id="dropzone">
+        <strong>Drop resumes here</strong> or click to browse<br>PDF · DOCX · TXT
+      </div>
+      <input type="file" id="fileInput" multiple accept=".pdf,.docx,.doc,.txt">
+
+      <div class="filelist" id="fileList"></div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="runbar">
+      <button class="primary" id="runBtn">Run screening</button>
+      <button class="ghost" id="resetBtn">Reset index</button>
+      <span class="runmsg" id="runMsg"></span>
+    </div>
+  </div>
+
+  <div class="results">
+    <div class="results-head">
+      <h2>Results</h2>
+      <span class="meta" id="resultsMeta"></span>
+    </div>
+
+    <div class="results-grid" id="resultsGrid">
+      <div class="radar-card">
+        <h3>Match radar</h3>
+        <p class="sub">Distance from center = semantic similarity to the job description.</p>
+        <div class="radar-wrap"><svg id="radarSvg" viewBox="-110 -110 220 220"></svg></div>
+      </div>
+      <div>
+        <div class="board" id="board">
+          <div class="placeholder">Run screening to see ranked candidates here.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    API base: <span class="mono" id="apiBaseLabel"></span> — edit <span class="mono">API_BASE</span> at the top of app.js to point elsewhere.
+  </footer>
+</div>
+
+<script>
+/* ============================================================
+   Configuration
+   ============================================================ */
+const API_BASE = window.location.origin.startsWith('http') && window.location.port === '8000'
+  ? ''                          // served by the FastAPI app itself
+  : 'http://localhost:8000';    // opened as a standalone file
+
+document.getElementById('apiBaseLabel').textContent = API_BASE || window.location.origin;
+
+/* ============================================================
+   State
+   ============================================================ */
+let requiredSkills = ['Python', 'AWS', 'Docker'];
+let files = []; // { file, status: queued|working|done|error, resumeId }
+
+/* ============================================================
+   API status check
+   ============================================================ */
+async function checkApi(){
+  const pill = document.getElementById('apiStatus');
+  const label = document.getElementById('apiStatusText');
+  try{
+    const res = await fetch(`${API_BASE}/health`);
+    if(!res.ok) throw new Error();
+    const data = await res.json();
+    pill.classList.add('online');
+    label.textContent = `online · ${data.indexed_resumes} indexed`;
+  }catch(e){
+    pill.classList.remove('online');
+    label.textContent = 'API offline — start uvicorn';
+  }
+}
+checkApi();
+setInterval(checkApi, 8000);
+
+/* ============================================================
+   Skill chips
+   ============================================================ */
+function renderChips(){
+  const box = document.getElementById('skillChips');
+  box.innerHTML = '';
+  requiredSkills.forEach((skill, i) => {
+    const chip = document.createElement('div');
+    chip.className = 'chip';
+    chip.innerHTML = `<span>${skill}</span><button data-i="${i}">×</button>`;
+    chip.querySelector('button').onclick = () => {
+      requiredSkills.splice(i, 1);
+      renderChips();
+    };
+    box.appendChild(chip);
+  });
+}
+renderChips();
+
+document.getElementById('skillInput').addEventListener('keydown', (e) => {
+  if(e.key === 'Enter'){
+    e.preventDefault();
+    const val = e.target.value.trim();
+    if(val && !requiredSkills.includes(val)){
+      requiredSkills.push(val);
+      renderChips();
+    }
+    e.target.value = '';
+  }
+});
+
+/* ============================================================
+   File handling
+   ============================================================ */
+const dropzone = document.getElementById('dropzone');
+const fileInput = document.getElementById('fileInput');
+
+dropzone.addEventListener('click', () => fileInput.click());
+['dragover','dragenter'].forEach(evt =>
+  dropzone.addEventListener(evt, (e) => { e.preventDefault(); dropzone.classList.add('drag'); })
+);
+['dragleave','drop'].forEach(evt =>
+  dropzone.addEventListener(evt, (e) => { e.preventDefault(); dropzone.classList.remove('drag'); })
+);
+dropzone.addEventListener('drop', (e) => addFiles(e.dataTransfer.files));
+fileInput.addEventListener('change', (e) => addFiles(e.target.files));
+
+function addFiles(fileListObj){
+  Array.from(fileListObj).forEach(f => {
+    files.push({ file: f, status: 'queued', resumeId: null });
+  });
+  renderFileList();
+}
+
+function renderFileList(){
+  const box = document.getElementById('fileList');
+  box.innerHTML = '';
+  files.forEach((entry, i) => {
+    const row = document.createElement('div');
+    row.className = 'fileitem';
+    row.innerHTML = `
+      <span class="name">${entry.file.name}</span>
+      <span class="tag ${entry.status}">${entry.status}</span>
+    `;
+    box.appendChild(row);
+  });
+}
+
+/* ============================================================
+   Pipeline stage indicator
+   ============================================================ */
+function setStage(stageName){
+  document.querySelectorAll('.stage').forEach(el => {
+    el.classList.remove('active');
+    if(el.dataset.stage === stageName) el.classList.add('active');
+  });
+}
+function markStageDone(stageName){
+  document.querySelectorAll('.stage').forEach(el => {
+    if(el.dataset.stage === stageName){ el.classList.remove('active'); el.classList.add('done'); }
+  });
+}
+function resetStages(){
+  document.querySelectorAll('.stage').forEach(el => el.classList.remove('active','done'));
+}
+
+/* ============================================================
+   Run screening: upload -> rank -> visualize
+   ============================================================ */
+const runBtn = document.getElementById('runBtn');
+const runMsg = document.getElementById('runMsg');
+
+runBtn.addEventListener('click', runScreening);
+
+async function runScreening(){
+  if(files.length === 0){
+    runMsg.textContent = 'Add at least one resume first.';
+    return;
+  }
+  const jd = document.getElementById('jdText').value.trim();
+  if(!jd){
+    runMsg.textContent = 'Job description is empty.';
+    return;
+  }
+
+  runBtn.disabled = true;
+  resetStages();
+
+  // ---- Stage 1 + 2: parse + embed (upload does both server-side) ----
+  setStage('parse');
+  runMsg.textContent = 'Parsing resumes…';
+
+  for(const entry of files){
+    if(entry.status === 'done') continue;
+    entry.status = 'working';
+    renderFileList();
+    setStage('embed');
+    try{
+      const form = new FormData();
+      form.append('file', entry.file);
+      const res = await fetch(`${API_BASE}/resumes/upload`, { method:'POST', body: form });
+      if(!res.ok){
+        const errBody = await res.json().catch(() => ({}));
+        throw new Error(errBody.detail || `Upload failed (${res.status})`);
+      }
+      const data = await res.json();
+      entry.resumeId = data.resume_id;
+      entry.status = 'done';
+    }catch(err){
+      entry.status = 'error';
+      runMsg.textContent = `Error on ${entry.file.name}: ${err.message}`;
+    }
+    renderFileList();
+  }
+  markStageDone('parse');
+  markStageDone('embed');
+
+  const failedCount = files.filter(f => f.status === 'error').length;
+  if(failedCount === files.length){
+    runMsg.textContent = 'All uploads failed — check the API is running.';
+    runBtn.disabled = false;
+    return;
+  }
+
+  // ---- Stage 3: search ----
+  setStage('search');
+  runMsg.textContent = 'Searching vector index…';
+
+  const payload = {
+    job_description: jd,
+    required_skills: requiredSkills,
+    min_years_required: Number(document.getElementById('minYears').value) || null,
+    top_k: Number(document.getElementById('topK').value) || 10,
+  };
+
+  let rankData;
+  try{
+    const res = await fetch(`${API_BASE}/rank`, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify(payload),
+    });
+    if(!res.ok){
+      const errBody = await res.json().catch(() => ({}));
+      throw new Error(errBody.detail || `Ranking failed (${res.status})`);
+    }
+    rankData = await res.json();
+  }catch(err){
+    runMsg.textContent = `Ranking error: ${err.message}`;
+    runBtn.disabled = false;
+    markStageDone('search');
+    return;
+  }
+  markStageDone('search');
+
+  // ---- Stage 4: rank + render ----
+  setStage('rank');
+  await new Promise(r => setTimeout(r, 350)); // let the stage indicator register
+  markStageDone('rank');
+
+  renderResults(rankData);
+  runMsg.textContent = `Done — ${rankData.rankings.length} candidate(s) ranked.`;
+  runBtn.disabled = false;
+}
+
+/* ============================================================
+   Reset index
+   ============================================================ */
+document.getElementById('resetBtn').addEventListener('click', async () => {
+  if(!confirm('Clear all indexed resumes on the server?')) return;
+  try{
+    await fetch(`${API_BASE}/resumes/reset`, { method: 'DELETE' });
+    files = [];
+    renderFileList();
+    document.getElementById('board').innerHTML = '<div class="placeholder">Run screening to see ranked candidates here.</div>';
+    document.getElementById('radarSvg').innerHTML = '';
+    document.getElementById('resultsMeta').textContent = '';
+    resetStages();
+    checkApi();
+    runMsg.textContent = 'Index cleared.';
+  }catch(e){
+    runMsg.textContent = 'Could not reach API to reset.';
+  }
+});
+
+/* ============================================================
+   Results rendering: radar + leaderboard
+   ============================================================ */
+function renderResults(data){
+  document.getElementById('resultsMeta').textContent =
+    `${data.total_candidates_considered} candidate(s) searched · showing top ${data.rankings.length}`;
+
+  renderRadar(data.rankings);
+  renderBoard(data.rankings);
+}
+
+function renderRadar(rankings){
+  const svg = document.getElementById('radarSvg');
+  const NS = 'http://www.w3.org/2000/svg';
+  svg.innerHTML = '';
+
+  const rings = [30, 60, 90];
+  rings.forEach(r => {
+    const c = document.createElementNS(NS, 'circle');
+    c.setAttribute('cx', 0); c.setAttribute('cy', 0); c.setAttribute('r', r);
+    c.setAttribute('class', 'radar-ring');
+    svg.appendChild(c);
+  });
+  [[-100,0,100,0],[0,-100,0,100]].forEach(([x1,y1,x2,y2]) => {
+    const l = document.createElementNS(NS, 'line');
+    l.setAttribute('x1',x1); l.setAttribute('y1',y1); l.setAttribute('x2',x2); l.setAttribute('y2',y2);
+    l.setAttribute('class','radar-axis');
+    svg.appendChild(l);
+  });
+  const center = document.createElementNS(NS, 'circle');
+  center.setAttribute('cx',0); center.setAttribute('cy',0); center.setAttribute('r',4);
+  center.setAttribute('class','radar-center');
+  svg.appendChild(center);
+
+  const n = rankings.length || 1;
+  rankings.forEach((r, i) => {
+    // distance from center = 1 - semantic similarity (closer = better match)
+    const dist = Math.max(8, (1 - r.semantic_score) * 95);
+    const angle = (i / n) * Math.PI * 2 - Math.PI / 2;
+    const x = Math.cos(angle) * dist;
+    const y = Math.sin(angle) * dist;
+
+    const blip = document.createElementNS(NS, 'circle');
+    blip.setAttribute('cx', x); blip.setAttribute('cy', y);
+    blip.setAttribute('r', i === 0 ? 6 : 4.5);
+    blip.setAttribute('class', `radar-blip ${i === 0 ? 'top' : ''}`);
+    blip.style.opacity = 0;
+    blip.style.transition = `opacity .4s ease ${i * 80}ms`;
+    svg.appendChild(blip);
+    requestAnimationFrame(() => blip.style.opacity = 1);
+
+    const label = document.createElementNS(NS, 'text');
+    label.setAttribute('x', x + 8); label.setAttribute('y', y + 3);
+    label.setAttribute('class', 'radar-label');
+    label.textContent = r.resume_id.length > 14 ? r.resume_id.slice(0,12) + '…' : r.resume_id;
+    svg.appendChild(label);
+
+    const title = document.createElementNS(NS, 'title');
+    title.textContent = `${r.resume_id} — semantic ${r.semantic_score}`;
+    blip.appendChild(title);
+  });
+}
+
+function renderBoard(rankings){
+  const board = document.getElementById('board');
+  board.innerHTML = '';
+
+  if(rankings.length === 0){
+    board.innerHTML = '<div class="empty">No candidates matched.</div>';
+    return;
+  }
+
+  rankings.forEach((r, i) => {
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.style.animationDelay = `${i * 60}ms`;
+
+    const matchedTags = r.matched_skills.map(s => `<span class="skilltag match">${s}</span>`).join('');
+    const missingTags = r.missing_skills.map(s => `<span class="skilltag miss">${s}</span>`).join('');
+
+    card.innerHTML = `
+      <div class="card-top">
+        <div class="rank-id">
+          <span class="rank-num">#${i+1}</span>
+          <span class="rank-name">${r.resume_id}</span>
+        </div>
+        <div class="rank-score">${(r.final_score*100).toFixed(0)}<small>/100</small></div>
+      </div>
+      <div class="metrics">
+        <div class="metric-row">
+          <span class="label">Semantic</span>
+          <div class="metric-track"><div class="metric-fill" style="width:${r.semantic_score*100}%"></div></div>
+          <span class="metric-val">${(r.semantic_score*100).toFixed(0)}%</span>
+        </div>
+        <div class="metric-row">
+          <span class="label">Skills</span>
+          <div class="metric-track"><div class="metric-fill skill" style="width:${r.skill_overlap_score*100}%"></div></div>
+          <span class="metric-val">${(r.skill_overlap_score*100).toFixed(0)}%</span>
+        </div>
+        <div class="metric-row">
+          <span class="label">Experience</span>
+          <div class="metric-track"><div class="metric-fill exp" style="width:${r.experience_match_score*100}%"></div></div>
+          <span class="metric-val">${(r.experience_match_score*100).toFixed(0)}%</span>
+        </div>
+      </div>
+      ${(matchedTags || missingTags) ? `<div class="skilltags">${matchedTags}${missingTags}</div>` : ''}
+    `;
+    board.appendChild(card);
+  });
+}
+</script>
+</body>
+</html>
